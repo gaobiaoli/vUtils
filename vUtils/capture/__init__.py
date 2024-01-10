@@ -1,1 +1,2 @@
-from FasterVideoCapture import FasterVideoCapture,BaseVideoCapture
+from .FasterVideoCapture import FasterVideoCapture
+from .BaseVideoCapture import BaseVideoCapture

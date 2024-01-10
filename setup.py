@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name="vUtils",
@@ -6,6 +6,5 @@ setup(
     author="gaobiaoli",
     author_email="gaobiaoli@tongji.edu.cn",
     packages=["vUtils"],
-   
 )
 
