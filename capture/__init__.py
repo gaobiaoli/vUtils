@@ -1,0 +1,1 @@
+from capture.FasterVideoCapture import BaseVideoCapture,FasterVideoCapture
