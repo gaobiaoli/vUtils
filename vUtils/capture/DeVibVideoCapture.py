@@ -14,7 +14,7 @@ class VibrationCalibrator:
         self.detector = cv2.ORB_create(nfeatures=30000)
         self.threshold = 20000  # 特征点小于阈值则跳过
         self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING)
-        self.average_displacement_threshold = 50.0  # 设置平均位移阈值
+        self.average_displacement_threshold = 20.0  # 设置平均位移阈值
 
     def getHomography(self):
         return self.H_old2base
@@ -42,16 +42,21 @@ class VibrationCalibrator:
         old_pts = np.float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
         new_pts = np.float32([kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
         H, mask = cv2.findHomography(new_pts, old_pts, cv2.RANSAC, 5.0)
-        new_pts_transformed = cv2.perspectiveTransform(np.array([new_pts]), H)[0]
+        inliers_new_pts = new_pts[mask.ravel() == 1]
+        inliers_old_pts = old_pts[mask.ravel() == 1]
 
-        # 计算所有点的欧几里得距离
-        distances = np.linalg.norm(new_pts_transformed - old_pts, axis=1)
+        # 变换内点 new_pts 到 old_pts 的坐标系
+        inliers_new_pts_transformed = cv2.perspectiveTransform(inliers_new_pts, H)
+
+        # 计算所有有效点的欧几里得距离
+        distances = np.linalg.norm(inliers_new_pts_transformed - inliers_old_pts, axis=1)
 
         # 计算平均位移
         average_displacement = np.mean(distances)
 
         # 检查平均位移是否过大
         if average_displacement > self.average_displacement_threshold:
+            print(average_displacement)
             print("Transformation invalid due to large displacement, skipping homography.")
             return False, self.getHomography()
         return True, H
