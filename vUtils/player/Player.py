@@ -2,12 +2,17 @@ import cv2
 
 
 class Player:
-    def __init__(self, window_name="Player", width=900, height=600):
+    def __init__(self, window_name="Player", width=900, height=600, shotFPS=False):
         self.window_name = window_name
         self.player_inited = False
         self.writer_inited = False
         self.width = width
         self.height = height
+        self.shotFPS = shotFPS
+
+    def show_FPS(self):
+        # TODO: showFPS in Video
+        self.show_FPS=True
 
     def init_player(self,window_name,width,height):
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
