@@ -3,11 +3,14 @@ import numpy as np
 from typing import Union
 from .FasterVideoCapture import FasterVideoCapture
 
+
 class VibrationCalibrator:
     """实现newFrame向baseImg的单应性变换"""
 
     def __init__(self, baseImg=None, baseHomography=None):
-        self.H_old2base = baseHomography  # 如果第一张图片无法配准，需要提供初始的单应性矩阵
+        self.H_old2base = (
+            baseHomography  # 如果第一张图片无法配准，需要提供初始的单应性矩阵
+        )
         self.baseImg = baseImg  # 基准图片
         self.oldImg = baseImg
 
@@ -20,7 +23,7 @@ class VibrationCalibrator:
         return self.H_old2base
 
     def getFeaturePoint(self, img):
-        
+
         kp, des = self.detector.detectAndCompute(img, None)
         return kp, des
 
@@ -33,7 +36,7 @@ class VibrationCalibrator:
         if len(kp2) < self.threshold:
             print("图像错误：跳过")
             return False, self.getHomography()
-        
+
         matches = self.matcher.knnMatch(des1, des2, k=2)
         good = []
         for m, n in matches:
@@ -49,7 +52,9 @@ class VibrationCalibrator:
         inliers_new_pts_transformed = cv2.perspectiveTransform(inliers_new_pts, H)
 
         # 计算所有有效点的欧几里得距离
-        distances = np.linalg.norm(inliers_new_pts_transformed - inliers_old_pts, axis=1)
+        distances = np.linalg.norm(
+            inliers_new_pts_transformed - inliers_old_pts, axis=1
+        )
 
         # 计算平均位移
         average_displacement = np.mean(distances)
@@ -57,7 +62,9 @@ class VibrationCalibrator:
         # 检查平均位移是否过大
         if average_displacement > self.average_displacement_threshold:
             print(average_displacement)
-            print("Transformation invalid due to large displacement, skipping homography.")
+            print(
+                "Transformation invalid due to large displacement, skipping homography."
+            )
             return False, self.getHomography()
         return True, H
 
@@ -74,6 +81,7 @@ class VibrationCalibrator:
             self.oldImg = newFrame
         return self.getHomography()
 
+
 class DeVibVideoCapture(FasterVideoCapture):
     def __init__(
         self,
@@ -84,12 +92,18 @@ class DeVibVideoCapture(FasterVideoCapture):
         dist: Union[None, np.array] = None,
         calibrator: Union[None, VibrationCalibrator] = None,
     ) -> None:
-        super().__init__(videoPath=videoPath, interval=interval,initStep=initStep, mtx=mtx, dist=dist)
+        super().__init__(
+            videoPath=videoPath,
+            interval=interval,
+            initStep=initStep,
+            mtx=mtx,
+            dist=dist,
+        )
         self.calibrator = calibrator
 
     def read(self):
         """间隔interval帧读取"""
-        ret,frame = super().read()
+        ret, frame = super().read()
         if not ret:
             return False, None
         if self.calibrator is not None:
