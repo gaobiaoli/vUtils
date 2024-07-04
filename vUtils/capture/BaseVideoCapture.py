@@ -17,8 +17,10 @@ class BaseVideoCapture:
         self.mtx = mtx
         self.dist = dist
         if isinstance(videoPath, str):
+            self.name = self.videoPath
             self.capture = cv2.VideoCapture(self.videoPath)
         else:
+            self.name = self.videoPath[0]
             self.capture = cv2.VideoCapture(self.videoPath.pop(0))
         self._capture_count = 0
         self.initStep = initStep
@@ -73,6 +75,7 @@ class BaseVideoCapture:
 
     def _update(self, newVideoPath):
         print(f"Update Capture to {newVideoPath}")
+        self.name = newVideoPath
         self.capture = cv2.VideoCapture(newVideoPath)
 
     def release(self):
