@@ -20,6 +20,13 @@ class MultiVideoCapture:
             countList.append(cap.count())
         return countList
     
+    @property
+    def name(self):
+        nameList=[]
+        for cap in self.capList:
+            nameList.append(cap.name)
+        return nameList
+
     def setInitStep(self,skipList):
         # TODO 
         assert len(skipList) == len(self.capList)
