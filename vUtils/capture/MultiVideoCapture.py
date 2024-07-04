@@ -19,3 +19,7 @@ class MultiVideoCapture:
         for cap in self.capList:
             countList.append(cap.count())
         return countList
+    
+    def setInitStep(self,skipList):
+        # TODO 
+        assert len(skipList) == len(self.capList)

@@ -2,7 +2,6 @@ import cv2
 from typing import Union, List
 import numpy as np
 
-
 class BaseVideoCapture:
     """带畸变校正和间隔读取的视频播放器"""
 

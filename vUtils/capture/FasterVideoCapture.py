@@ -6,8 +6,6 @@ import numpy as np
 from .BaseVideoCapture import BaseVideoCapture
 
 
-
-
 class FasterVideoCapture(BaseVideoCapture):
     VIDEO_END_FLAG = -1
 
@@ -20,7 +18,13 @@ class FasterVideoCapture(BaseVideoCapture):
         interval: int = 1,
         buffer_size: int = 5,
     ) -> None:
-        super().__init__(videoPath=videoPath, initStep=initStep, mtx=mtx, dist=dist,interval=interval)
+        super().__init__(
+            videoPath=videoPath,
+            initStep=initStep,
+            mtx=mtx,
+            dist=dist,
+            interval=interval,
+        )
         self.interval = interval
         self.buffer_size = buffer_size
         self._read_count = initStep
