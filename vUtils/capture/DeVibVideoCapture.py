@@ -7,17 +7,30 @@ from .FasterVideoCapture import FasterVideoCapture
 class VibrationCalibrator:
     """实现newFrame向baseImg的单应性变换"""
 
-    def __init__(self, baseImg=None, baseHomography=None):
+    def __init__(self, baseImg=None, baseHomography=None, transit=None):
         self.H_old2base = (
             baseHomography  # 如果第一张图片无法配准，需要提供初始的单应性矩阵
         )
         self.baseImg = baseImg  # 基准图片
         self.oldImg = baseImg
-
         self.detector = cv2.ORB_create(nfeatures=30000)
         self.threshold = 20000  # 特征点小于阈值则跳过
         self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING)
         self.average_displacement_threshold = 20.0  # 设置平均位移阈值
+
+
+        # 无法一步配准时，设置多个中继图片
+        if self.H_old2base is None and transit is not None:
+            for image in transit:
+                if self.H_old2base is None:
+                    ret, self.H_old2base = self.calHomography(old_img=self.baseImg, new_img=image)
+                else:
+                    ret, H_new2old = self.calHomography(old_img=self.oldImg, new_img=image)
+                    if ret:
+                        self.H_old2base = np.dot(H_new2old, self.H_old2base)
+                self.oldImg = image
+
+        
 
     def getHomography(self):
         return self.H_old2base

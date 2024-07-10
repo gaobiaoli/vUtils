@@ -20,7 +20,6 @@ class MultiVideoCapture:
             countList.append(cap.count())
         return countList
     
-    @property
     def name(self):
         nameList=[]
         for cap in self.capList:
