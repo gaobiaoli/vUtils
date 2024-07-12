@@ -1,13 +1,18 @@
 import cv2
 import numpy as np
-from typing import Union
+from typing import Union, List
 from .FasterVideoCapture import FasterVideoCapture
 
 
 class VibrationCalibrator:
     """实现newFrame向baseImg的单应性变换"""
 
-    def __init__(self, baseImg=None, baseHomography=None, transit=None):
+    def __init__(
+        self,
+        baseImg=None,
+        baseHomography=None,
+        transit=Union[None, List[np.array], List[str]],
+    ):
         self.H_old2base = (
             baseHomography  # 如果第一张图片无法配准，需要提供初始的单应性矩阵
         )
@@ -18,19 +23,25 @@ class VibrationCalibrator:
         self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING)
         self.average_displacement_threshold = 20.0  # 设置平均位移阈值
 
-
         # 无法一步配准时，设置多个中继图片
         if self.H_old2base is None and transit is not None:
-            for image in transit:
-                if self.H_old2base is None:
-                    ret, self.H_old2base = self.calHomography(old_img=self.baseImg, new_img=image)
+            for item in transit:
+                if isinstance(item, str):
+                    image = cv2.imread(item)
                 else:
-                    ret, H_new2old = self.calHomography(old_img=self.oldImg, new_img=image)
-                    if ret:
-                        self.H_old2base = np.dot(H_new2old, self.H_old2base)
-                self.oldImg = image
-
-        
+                    image = item
+                self.calibrate(image)
+                # if self.H_old2base is None:
+                #     ret, self.H_old2base = self.calHomography(
+                #         old_img=self.baseImg, new_img=image
+                #     )
+                # else:
+                #     ret, H_new2old = self.calHomography(
+                #         old_img=self.oldImg, new_img=image
+                #     )
+                #     if ret:
+                #         self.H_old2base = np.dot(H_new2old, self.H_old2base)
+                # self.oldImg = image
 
     def getHomography(self):
         return self.H_old2base
