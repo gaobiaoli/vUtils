@@ -11,8 +11,12 @@ class VibrationCalibrator:
         self,
         baseImg=None,
         baseHomography=None,
-        transit=Union[None, List[np.array], List[str]],
+        mtx: Union[None, np.array] = None,
+        dist: Union[None, np.array] = None,
+        transit: Union[None, List[np.array], List[str]] = None,
     ):
+        self.mtx = mtx
+        self.dist = dist
         self.H_old2base = (
             baseHomography  # 如果第一张图片无法配准，需要提供初始的单应性矩阵
         )
@@ -93,6 +97,9 @@ class VibrationCalibrator:
         return True, H
 
     def calibrate(self, newFrame):
+        if self.mtx is not None and self.dist is not None:
+            newFrame = cv2.undistort(newFrame, self.mtx, self.dist)
+
         if self.H_old2base is None:
             ret, self.H_old2base = self.calHomography(
                 old_img=self.baseImg, new_img=newFrame
