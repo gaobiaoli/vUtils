@@ -110,7 +110,10 @@ class VibrationCalibrator:
                 self.H_old2base = np.dot(H_new2old, self.H_old2base)
         if ret:
             self.oldImg = newFrame
-        return self.getHomography()
+        newFrame = cv2.warpPerspective(
+                newFrame, self.getHomography(), newFrame.shape[:2][::-1], borderValue=0
+            )
+        return ret, newFrame
 
 
 class DeVibVideoCapture(FasterVideoCapture):
@@ -138,8 +141,5 @@ class DeVibVideoCapture(FasterVideoCapture):
         if not ret:
             return False, None
         if self.calibrator is not None:
-            Homography = self.calibrator.calibrate(frame)
-            frame = cv2.warpPerspective(
-                frame, Homography, frame.shape[:2][::-1], borderValue=0
-            )
+            ret, frame = self.calibrator.calibrate(frame)
         return ret, frame
