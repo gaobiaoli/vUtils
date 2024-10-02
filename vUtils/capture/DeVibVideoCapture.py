@@ -15,6 +15,13 @@ class VibrationCalibrator:
         dist: Union[None, np.array] = None,
         transit: Union[None, List[np.array], List[str]] = None,
     ):
+        '''
+        1、Img_0和Img_base直接配准 -> Img_old
+        >> cap=VibrationCalibrator(baseImg=baseImg)
+        2、Img_0在baseHomography转换后与baseImg匹配 -> Img_old
+        >> cap=VibrationCalibrator(baseHomography=baseHomography)
+        3、Img_0以transit为中继
+        '''
         self.mtx = mtx
         self.dist = dist
         self.H_old2base = (
@@ -100,11 +107,13 @@ class VibrationCalibrator:
         if self.mtx is not None and self.dist is not None:
             newFrame = cv2.undistort(newFrame, self.mtx, self.dist)
 
-        if self.H_old2base is None:
+        if self.H_old2base is None: #入口： 无baseH, 直接从Img_0向baseImg配准
             ret, self.H_old2base = self.calHomography(
                 old_img=self.baseImg, new_img=newFrame
             )
         else:
+            if self.oldImg is None: #入口： 无baseImg, Img_0只需等待下一张，Img_0在baseH转换后与baseImg匹配
+                self.oldImg=newFrame
             ret, H_new2old = self.calHomography(old_img=self.oldImg, new_img=newFrame)
             if ret:
                 self.H_old2base = np.dot(H_new2old, self.H_old2base)

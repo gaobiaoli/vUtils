@@ -37,17 +37,18 @@ class FasterVideoCapture(BaseVideoCapture):
         while not self.stop_event.is_set():
             ret, frame = super().read()
             if ret:
-                self.frame_buffer.put((self._capture_count, frame), block=True)
+                self.frame_buffer.put((self._capture_count, frame, self._capture_count_video), block=True)
             else:
                 self.frame_buffer.put(
-                    (FasterVideoCapture.VIDEO_END_FLAG, None), block=True
+                    (FasterVideoCapture.VIDEO_END_FLAG, None, self._capture_count_video), block=True
                 )
 
     def read(self):
-        count, frame = self.frame_buffer.get(block=True)
+        count, frame, frameCount = self.frame_buffer.get(block=True)
         if count == FasterVideoCapture.VIDEO_END_FLAG:
             return False, None
         self._read_count += self.interval
+        self._frameCount = frameCount
         assert count == self._read_count
         return True, frame
 
@@ -58,3 +59,6 @@ class FasterVideoCapture(BaseVideoCapture):
 
     def count(self):
         return self._read_count
+
+    def getVideoFrameCount(self):
+        return self._frameCount

@@ -1,6 +1,7 @@
 import cv2
 from typing import Union, List
 import numpy as np
+import os
 
 class BaseVideoCapture:
     """带畸变校正和间隔读取的视频播放器"""
@@ -23,12 +24,15 @@ class BaseVideoCapture:
             self.name = self.videoPath[0]
             self.capture = cv2.VideoCapture(self.videoPath.pop(0))
         self._capture_count = 0
+        self._capture_count_video = 0
         self.initStep = initStep
         self.skip(step=initStep)
         self.interval = interval
-
+        
     def skip(self, step):
         """跳过step帧"""
+        if step<0:
+            return True
         for _ in range(step):
             ret = self._grab()
             if not ret:
@@ -40,16 +44,18 @@ class BaseVideoCapture:
         ret = self.capture.grab()
         if ret:
             self._capture_count += 1
+            self._capture_count_video += 1
         elif isinstance(self.videoPath, list) and len(self.videoPath):
             self._update(self.videoPath.pop(0))
             ret = self._grab()
         return ret
 
     def _read(self):
-        """跳帧+读帧"""
+        """读帧"""
         ret, frame = self.capture.read()
         if ret:
             self._capture_count += 1
+            self._capture_count_video += 1
         elif isinstance(self.videoPath, list) and len(self.videoPath):
             self.capture.release()
             self._update(self.videoPath.pop(0))
@@ -77,9 +83,16 @@ class BaseVideoCapture:
         print(f"Update Capture to {newVideoPath}")
         self.name = newVideoPath
         self.capture = cv2.VideoCapture(newVideoPath)
+        self._capture_count_video = 0
 
     def release(self):
         self.capture.release()
 
     def count(self):
         return self._capture_count
+    
+    def getVideoID(self):
+        return os.path.basename(self.name).split('.')[0]
+    
+    def getVideoFrameCount(self):
+        return self._capture_count_video
