@@ -83,7 +83,7 @@ class SegUtils:
         return Q
 
     @staticmethod
-    def denseCRF_from_labelmap(prior_image, label_map, unsure=[0], gt_prob=0.7, parameter=[1, 3, 20, 30, 10], n_labels=None):
+    def denseCRF_from_label(prior_image, label_map, unsure=[0], gt_prob=0.7, parameter=[1, 3, 20, 30, 10], n_labels=None):
         """
         使用 label_map 构建 softmax-like 概率图，并调用 denseCRF 进行精化。
         """
