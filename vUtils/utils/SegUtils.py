@@ -83,6 +83,31 @@ class SegUtils:
         return Q
 
     @staticmethod
+    def denseCRF_from_labelmap(prior_image, label_map, unsure=[0], gt_prob=0.7, parameter=[1, 3, 20, 30, 10], n_labels=None):
+        """
+        使用 label_map 构建 softmax-like 概率图，并调用 denseCRF 进行精化。
+        """
+        h, w = label_map.shape
+        if n_labels is None:
+            n_labels = int(label_map.max()) + 1
+
+        # 构造 softmax 概率矩阵 (H, W, C)
+        matrix = np.zeros((h, w, n_labels), dtype=np.float32)
+
+        for cls in range(n_labels):
+            mask = label_map == cls
+            if cls in unsure:
+                matrix[mask, :] = 0.0
+            else:
+                matrix[mask, :] = (1.0 - gt_prob) / (n_labels - 1)
+                matrix[mask, cls] = gt_prob
+
+        # 调用已有 denseCRF 函数
+        refined = SegUtils.denseCRF(prior_image, matrix, parameter=parameter)
+
+        return refined.argmax(axis=-1).astype(np.uint8)
+    
+    @staticmethod
     def preprocess(imgList, prefunc=None, stack=False, postfunc=None):
         """
         BGR2RGB
